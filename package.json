@@ -1,7 +1,7 @@
 {
-  "name": "vite-svg-preview-plugins",
+  "name": "vite-svg-preview-plugin",
   "version": "0.1.2",
-  "description": "",
+  "description": "svg preview plugin for vite",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,7 @@
     "preview",
     "svg-preview"
   ],
-  "author": "",
+  "author": "brian lee",
   "license": "ISC",
   "devDependencies": {
     "@jsdevtools/version-bump-prompt": "^6.1.0",
