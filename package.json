@@ -1,6 +1,6 @@
 {
   "name": "vite-svg-preview-plugin",
-  "version": "0.1.2",
+  "version": "0.1.1",
   "description": "svg preview plugin for vite",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

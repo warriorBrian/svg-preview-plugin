@@ -1,6 +1,6 @@
-# vite-svg-preview-plugins
+# vite-svg-preview-plugin
 
-### 这里是Fork项目修改版，针对svg-preview-plugin的版本进行修复，解决vite引入提示__dirname is not defined的问题，其他功能请参考svg-preview-plugin项目，尊重原作者，谢谢！
+> 这里是Fork项目修改版，针对svg-preview-plugin的版本进行修复，解决vite引入提示__dirname is not defined的问题，其他功能请参考svg-preview-plugin项目，尊重原作者，谢谢！
 
 说明：解决项目中 svg 文件过多，不好管理的问题（支持 vite 和 webpack）
 
@@ -13,7 +13,7 @@
 # use
 
 ```
-npm i -D svg-preview-plugin@latest
+npm i -D vite-svg-preview-plugin@latest
 ```
 
 ## options
@@ -45,7 +45,7 @@ npm i -D svg-preview-plugin@latest
 
 ```js
 // webpack
-const { WebpackPlugin } = require('svg-preview-plugin')
+const { WebpackPlugin } = require('vite-svg-preview-plugin')
 
 module.exports = {
   plugins: [
@@ -63,7 +63,7 @@ module.exports = {
 
 ```js
 // vite | rollup
-import { VitePlugin } from 'svg-preview-plugin'
+import { VitePlugin } from 'vite-svg-preview-plugin'
 
 module.exports = {
   plugins: [
