@@ -1,24 +1,3 @@
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve2, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve2(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
-
 // utils/file.ts
 import glob from "glob";
 import { watch } from "fs";
@@ -188,7 +167,18 @@ var createHtmlTemplate = (filesContent) => {
 
 // utils/index.ts
 import path from "path";
-var resolve = (filePath) => path.resolve(__dirname, filePath);
+import { fileURLToPath } from "url";
+var dirname;
+var isESM = typeof import.meta !== "undefined";
+if (isESM) {
+  const __filename = fileURLToPath(new URL(import.meta.url));
+  dirname = path.dirname(__filename);
+} else if (typeof __dirname !== "undefined") {
+  dirname = __dirname;
+} else {
+  dirname = process.cwd();
+}
+var resolve = (filePath) => path.resolve(dirname, filePath);
 
 // utils/server.ts
 import browserSync from "browser-sync";
@@ -196,13 +186,11 @@ import fs from "fs/promises";
 var bs = browserSync.create();
 var cacheOptions;
 var socketEmitter = {
-  removeFile(path3) {
-    return __async(this, null, function* () {
-      yield fs.rm(path3);
-    });
+  async removeFile(path3) {
+    await fs.rm(path3);
   },
   formatName(data) {
-    if (typeof (cacheOptions == null ? void 0 : cacheOptions.formatName) === "function") {
+    if (typeof cacheOptions?.formatName === "function") {
       bs.sockets.emit("name", cacheOptions.formatName({
         name: data.name,
         filePath: data.filePath
@@ -230,14 +218,14 @@ var destoryServer = () => bs.exit();
 // utils/file.ts
 var watchers = [];
 var cacheOptions2;
-var getFileContent = (filePath) => __async(void 0, null, function* () {
-  const content = yield fs2.readFile(filePath, "utf8");
+var getFileContent = async (filePath) => {
+  const content = await fs2.readFile(filePath, "utf8");
   return {
     name: path2.basename(filePath).replace(".svg", ""),
     filePath,
     content
   };
-});
+};
 var matchFilesPath = (dirPath, deep) => glob.sync(deep ? "**/*.svg" : "*.svg", { cwd: dirPath }).map((filePath) => path2.resolve(dirPath, filePath));
 var matchFiles = ({ dirPath, deep }) => {
   if (Array.isArray(dirPath)) {
@@ -252,13 +240,13 @@ var matchFiles = ({ dirPath, deep }) => {
 };
 var getFilesInfo = (fileList) => Promise.all(fileList.map((filePath) => getFileContent(filePath)));
 var timer;
-var watchDir = () => __async(void 0, null, function* () {
+var watchDir = async () => {
   clearTimeout(timer);
-  timer = setTimeout(() => __async(void 0, null, function* () {
-    yield writeFile(cacheOptions2);
+  timer = setTimeout(async () => {
+    await writeFile(cacheOptions2);
     reloadServer();
-  }), 100);
-});
+  }, 100);
+};
 var createWatcher = ({ dirPath }) => {
   const fnc = () => watchDir();
   if (Array.isArray(dirPath)) {
@@ -268,19 +256,19 @@ var createWatcher = ({ dirPath }) => {
   }
   watchers.push(watch(dirPath, fnc));
 };
-var start = (options) => __async(void 0, null, function* () {
+var start = async (options) => {
   cacheOptions2 = options;
   createServer(options);
   createWatcher(options);
-  yield writeFile(options);
+  await writeFile(options);
   reloadServer();
-});
-var writeFile = (options) => __async(void 0, null, function* () {
+};
+var writeFile = async (options) => {
   const fileList = matchFiles(options);
-  const filesContent = yield getFilesInfo(fileList);
+  const filesContent = await getFilesInfo(fileList);
   const content = createHtmlTemplate(filesContent);
-  yield fs2.writeFile(resolve("../app/index.html"), content);
-});
+  await fs2.writeFile(resolve("../app/index.html"), content);
+};
 var destory = () => {
   watchers.length = 0;
   return destoryServer();
@@ -314,36 +302,30 @@ var WebpackPlugin = class SvgPreviewPlugin {
     });
     this.options = options;
   }
-  apply(compiler) {
-    return __async(this, null, function* () {
-      var _a, _b;
-      const { options } = this;
-      (_a = options.open) != null ? _a : options.open = true;
-      (_b = options.port) != null ? _b : options.port = 3e3;
-      compiler.hooks.done.tap("SvgPreviewPlugin", () => {
-        console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
-      });
-      compiler.hooks.watchClose.tap("SvgPreviewPlugin", destory);
-      if (!this.isWatch) {
-        this.isWatch = true;
-        yield start(options);
-      }
+  async apply(compiler) {
+    const { options } = this;
+    options.open ?? (options.open = true);
+    options.port ?? (options.port = 3e3);
+    compiler.hooks.done.tap("SvgPreviewPlugin", () => {
+      console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
     });
+    compiler.hooks.watchClose.tap("SvgPreviewPlugin", destory);
+    if (!this.isWatch) {
+      this.isWatch = true;
+      await start(options);
+    }
   }
 };
 function VitePlugin(options) {
-  var _a, _b;
-  (_a = options.open) != null ? _a : options.open = true;
-  (_b = options.port) != null ? _b : options.port = 3e3;
+  options.open ?? (options.open = true);
+  options.port ?? (options.port = 3e3);
   return {
     name: "SvgPreviewPlugin",
     apply: "serve",
-    buildStart() {
-      return __async(this, null, function* () {
-        console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
-        destory();
-        yield start(options);
-      });
+    async buildStart() {
+      console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
+      destory();
+      await start(options);
     },
     closeWatcher() {
       destory();

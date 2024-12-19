@@ -26,26 +26,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve2, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve2(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
 
 // index.ts
 var svg_preview_plugin_exports = {};
@@ -224,7 +204,19 @@ var createHtmlTemplate = (filesContent) => {
 
 // utils/index.ts
 var import_path = __toESM(require("path"));
-var resolve = (filePath) => import_path.default.resolve(__dirname, filePath);
+var import_url = require("url");
+var import_meta = {};
+var dirname;
+var isESM = typeof import_meta !== "undefined";
+if (isESM) {
+  const __filename = (0, import_url.fileURLToPath)(new URL(import_meta.url));
+  dirname = import_path.default.dirname(__filename);
+} else if (typeof __dirname !== "undefined") {
+  dirname = __dirname;
+} else {
+  dirname = process.cwd();
+}
+var resolve = (filePath) => import_path.default.resolve(dirname, filePath);
 
 // utils/server.ts
 var import_browser_sync = __toESM(require("browser-sync"));
@@ -232,13 +224,11 @@ var import_promises = __toESM(require("fs/promises"));
 var bs = import_browser_sync.default.create();
 var cacheOptions;
 var socketEmitter = {
-  removeFile(path3) {
-    return __async(this, null, function* () {
-      yield import_promises.default.rm(path3);
-    });
+  async removeFile(path3) {
+    await import_promises.default.rm(path3);
   },
   formatName(data) {
-    if (typeof (cacheOptions == null ? void 0 : cacheOptions.formatName) === "function") {
+    if (typeof cacheOptions?.formatName === "function") {
       bs.sockets.emit("name", cacheOptions.formatName({
         name: data.name,
         filePath: data.filePath
@@ -266,14 +256,14 @@ var destoryServer = () => bs.exit();
 // utils/file.ts
 var watchers = [];
 var cacheOptions2;
-var getFileContent = (filePath) => __async(void 0, null, function* () {
-  const content = yield import_promises2.default.readFile(filePath, "utf8");
+var getFileContent = async (filePath) => {
+  const content = await import_promises2.default.readFile(filePath, "utf8");
   return {
     name: import_path2.default.basename(filePath).replace(".svg", ""),
     filePath,
     content
   };
-});
+};
 var matchFilesPath = (dirPath, deep) => import_glob.default.sync(deep ? "**/*.svg" : "*.svg", { cwd: dirPath }).map((filePath) => import_path2.default.resolve(dirPath, filePath));
 var matchFiles = ({ dirPath, deep }) => {
   if (Array.isArray(dirPath)) {
@@ -288,13 +278,13 @@ var matchFiles = ({ dirPath, deep }) => {
 };
 var getFilesInfo = (fileList) => Promise.all(fileList.map((filePath) => getFileContent(filePath)));
 var timer;
-var watchDir = () => __async(void 0, null, function* () {
+var watchDir = async () => {
   clearTimeout(timer);
-  timer = setTimeout(() => __async(void 0, null, function* () {
-    yield writeFile(cacheOptions2);
+  timer = setTimeout(async () => {
+    await writeFile(cacheOptions2);
     reloadServer();
-  }), 100);
-});
+  }, 100);
+};
 var createWatcher = ({ dirPath }) => {
   const fnc = () => watchDir();
   if (Array.isArray(dirPath)) {
@@ -304,19 +294,19 @@ var createWatcher = ({ dirPath }) => {
   }
   watchers.push((0, import_fs.watch)(dirPath, fnc));
 };
-var start = (options) => __async(void 0, null, function* () {
+var start = async (options) => {
   cacheOptions2 = options;
   createServer(options);
   createWatcher(options);
-  yield writeFile(options);
+  await writeFile(options);
   reloadServer();
-});
-var writeFile = (options) => __async(void 0, null, function* () {
+};
+var writeFile = async (options) => {
   const fileList = matchFiles(options);
-  const filesContent = yield getFilesInfo(fileList);
+  const filesContent = await getFilesInfo(fileList);
   const content = createHtmlTemplate(filesContent);
-  yield import_promises2.default.writeFile(resolve("../app/index.html"), content);
-});
+  await import_promises2.default.writeFile(resolve("../app/index.html"), content);
+};
 var destory = () => {
   watchers.length = 0;
   return destoryServer();
@@ -350,36 +340,30 @@ var WebpackPlugin = class SvgPreviewPlugin {
     });
     this.options = options;
   }
-  apply(compiler) {
-    return __async(this, null, function* () {
-      var _a, _b;
-      const { options } = this;
-      (_a = options.open) != null ? _a : options.open = true;
-      (_b = options.port) != null ? _b : options.port = 3e3;
-      compiler.hooks.done.tap("SvgPreviewPlugin", () => {
-        console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
-      });
-      compiler.hooks.watchClose.tap("SvgPreviewPlugin", destory);
-      if (!this.isWatch) {
-        this.isWatch = true;
-        yield start(options);
-      }
+  async apply(compiler) {
+    const { options } = this;
+    options.open ?? (options.open = true);
+    options.port ?? (options.port = 3e3);
+    compiler.hooks.done.tap("SvgPreviewPlugin", () => {
+      console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
     });
+    compiler.hooks.watchClose.tap("SvgPreviewPlugin", destory);
+    if (!this.isWatch) {
+      this.isWatch = true;
+      await start(options);
+    }
   }
 };
 function VitePlugin(options) {
-  var _a, _b;
-  (_a = options.open) != null ? _a : options.open = true;
-  (_b = options.port) != null ? _b : options.port = 3e3;
+  options.open ?? (options.open = true);
+  options.port ?? (options.port = 3e3);
   return {
     name: "SvgPreviewPlugin",
     apply: "serve",
-    buildStart() {
-      return __async(this, null, function* () {
-        console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
-        destory();
-        yield start(options);
-      });
+    async buildStart() {
+      console.log(`SVG\u9884\u89C8\uFF1A`, `\x1B[36mhttp://localhost:${options.port}\x1B[0m`);
+      destory();
+      await start(options);
     },
     closeWatcher() {
       destory();

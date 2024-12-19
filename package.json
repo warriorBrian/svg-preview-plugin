@@ -1,12 +1,12 @@
 {
-  "name": "svg-preview-plugin",
-  "version": "0.5.2",
+  "name": "vite-svg-preview-plugins",
+  "version": "0.1.0",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "homepage": "https://github.com/lishaobos/svg-preview-plugin",
-  "repository": "https://github.com/lishaobos/svg-preview-plugin",
+  "homepage": "https://github.com/warriorBrian/svg-preview-plugin",
+  "repository": "https://github.com/warriorBrian/svg-preview-plugin",
   "scripts": {
     "eslint": "eslint .",
     "build": "pnpm eslint && tsup index.ts --dts --format esm,cjs",
@@ -35,7 +35,7 @@
     "preview",
     "svg-preview"
   ],
-  "author": "lishaobos",
+  "author": "",
   "license": "ISC",
   "devDependencies": {
     "@jsdevtools/version-bump-prompt": "^6.1.0",

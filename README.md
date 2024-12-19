@@ -1,9 +1,8 @@
-# svg-preview-plugin
+# vite-svg-preview-plugins
+
+### 这里是Fork项目修改版，针对svg-preview-plugin的版本进行修复，解决vite引入提示__dirname is not defined的问题，其他功能请参考svg-preview-plugin项目，尊重原作者，谢谢！
 
 说明：解决项目中 svg 文件过多，不好管理的问题（支持 vite 和 webpack）
-
-
-<img src="https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8c452533b0e847f48c10872a465d1e19~tplv-k3u1fbpfcp-watermark.image">
 
 功能：
 - 实时预览 svg，动态更新预览内容
